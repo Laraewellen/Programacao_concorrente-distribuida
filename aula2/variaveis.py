@@ -13,6 +13,8 @@ def incrementar():
         lock.acquire() #acessar o recurso(variavel)
         try:
             Contador = Contador + 1
+            print(Contador)
+            time.sleep(0.1)
         finally:
             lock.release() #liberar o recurso(variavel)
 threads = []
