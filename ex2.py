@@ -7,12 +7,12 @@ def tarefa():
     print("fim...")
     
     #bloco principal (main)
-    tA = threading.Thread(target=tarefa)
-    tB = threading.Thread(target=tarefa)
+tA = threading.Thread(target=tarefa)
+tB = threading.Thread(target=tarefa)
     
-    tA.start()
-    tB.start()
-    tA.join()
-    tB.join()
+tA.start()
+tB.start()
+tA.join()
+tB.join()
     
-    print("Thread principal finalizasa!")
+print("Thread principal finalizasa!")
