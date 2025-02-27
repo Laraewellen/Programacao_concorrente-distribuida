@@ -6,8 +6,11 @@ def saudacao(nome, tempo):
     time.sleep(tempo)
     print(f"tchau, {nome}")
 
-thread = threading.Thread(target=saudacao, args = ("Lara", 6))
-thread.start()
-thread.join()
+A= thread = threading.Thread(target=saudacao, args = ("Lara", 6))
+B= thread = threading.Thread(target=saudacao, args = ("Julia", 2))
+A.start()
+B.start()
+A.join()
+B.join()
 
 print ("Thread principal encerrada")
