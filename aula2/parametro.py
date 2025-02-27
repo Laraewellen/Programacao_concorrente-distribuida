@@ -9,8 +9,8 @@ def saudacao(nome, tempo):
 A= thread = threading.Thread(target=saudacao, args = ("Lara", 6))
 B= thread = threading.Thread(target=saudacao, args = ("Julia", 2))
 A.start()
-B.start()
 A.join()
+B.start()
 B.join()
 
 print ("Thread principal encerrada")
