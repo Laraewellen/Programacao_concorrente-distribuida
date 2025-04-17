@@ -1,75 +1,78 @@
 import socket
 import threading
 
-# Lista de 100 assentos (False = disponível, True = reservado)
 assentos = [False] * 100
 lock = threading.Lock()
 
-def formatar_assentos():
-    visual = ""
-    for i in range(100):
-        status = "XX" if assentos[i] else f"{i+1:02}"
-        visual += f"[{status}] "
-        if (i + 1) % 10 == 0:
-            visual += "\n"
-    return visual
+def mostrar_assentos():
+    return "\n".join([f"Assento {i+1}: {'Livre' if not ocupado else 'Reservado'}"
+                      for i, ocupado in enumerate(assentos)])
 
 def lidar_com_cliente(conn, addr):
-    print(f"Cliente conectado: {addr}")
-    conn.sendall("Bem-vindo ao sistema de reserva de assentos!\n".encode())
+    print(f"🟢 Cliente conectado: {addr}")
+    try:
+        while True:
+            prompt = (
+                "\nDigite 'ver' para ver os assentos,\n"
+                "ou números dos assentos separados por vírgula para reservar (ex: 10,12),\n"
+                "ou 'sair' para sair:\n"
+            )
+            conn.sendall(prompt.encode())
 
-    while True:
-        try:
-            conn.sendall("Digite os números dos assentos que deseja reservar (ex: 1,2,3) ou 'sair': ".encode())
             dados = conn.recv(1024).decode().strip()
-
-            if not dados or dados.lower() == 'sair':
+            if not dados:
                 break
 
-            numeros = [int(n) for n in dados.split(',') if n.isdigit()]
-            reservados = []
-            ja_ocupados = []
-            com_erro = []
+            if dados.lower() == "ver":
+                print(f"[{addr}] solicitou visualização dos assentos")
+                estado = mostrar_assentos()
+                conn.sendall((estado + "\n").encode())
 
-            with lock:
-                for n in numeros:
-                    if 1 <= n <= 100:
-                        if not assentos[n - 1]:
-                            assentos[n - 1] = True
-                            reservados.append(n)
+            elif dados.lower() == "sair":
+                print(f"[{addr}] encerrou a conexão")
+                break
+
+            else:
+                try:
+                    assentos_desejados = list(map(int, dados.split(",")))
+                    print(f"[{addr}] tentou reservar os assentos: {assentos_desejados}")
+
+                    with lock:
+                        sucesso = True
+                        for a in assentos_desejados:
+                            if a < 1 or a > 100 or assentos[a - 1]:
+                                sucesso = False
+                                break
+
+                        if sucesso:
+                            for a in assentos_desejados:
+                                assentos[a - 1] = True
+                            mensagem = "✅ Reserva confirmada.\n"
+                            print(f"[{addr}] reserva confirmada para os assentos: {assentos_desejados}")
                         else:
-                            ja_ocupados.append(n)
-                    else:
-                        com_erro.append(n)
+                            mensagem = "❌ Falha na reserva. Verifique se os assentos estão disponíveis ou válidos.\n"
+                            print(f"[{addr}] falha ao reservar os assentos: {assentos_desejados}")
 
-            resposta = ""
-            if reservados:
-                resposta += f"Assentos reservados com sucesso: {', '.join(map(str, reservados))}\n"
-            if ja_ocupados:
-                resposta += f"Já estavam ocupados: {', '.join(map(str, ja_ocupados))}\n"
-            if com_erro:
-                resposta += f"Números inválidos: {', '.join(map(str, com_erro))}\n"
+                    conn.sendall(mensagem.encode())
 
-            resposta += "\nEstado atual dos assentos:\n" + formatar_assentos()
-            conn.sendall(resposta.encode())
-        except:
-            break
+                except ValueError:
+                    erro = "❗ Entrada inválida. Use apenas números separados por vírgula.\n"
+                    conn.sendall(erro.encode())
+                    print(f"[{addr}] enviou entrada inválida: {dados}")
 
-    print(f"Cliente desconectado: {addr}")
-    conn.close()
+    finally:
+        conn.close()
+        print(f"🔴 Cliente desconectado: {addr}")
 
 def iniciar_servidor():
-    host = 'localhost'
-    porta = 12345
     servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    servidor.bind((host, porta))
-    servidor.listen(5)
-    print("Servidor iniciado. Aguardando conexões...")
+    servidor.bind(("localhost", 12345))
+    servidor.listen()
+    print("🚀 Servidor iniciado. Aguardando conexões...\n")
 
     while True:
         conn, addr = servidor.accept()
-        thread = threading.Thread(target=lidar_com_cliente, args=(conn, addr))
-        thread.start()
+        print(f"🔗 Conexão estabelecida com {addr}")
+        threading.Thread(target=lidar_com_cliente, args=(conn, addr), daemon=True).start()
 
-if __name__ == "__main__":
-    iniciar_servidor()
+iniciar_servidor()

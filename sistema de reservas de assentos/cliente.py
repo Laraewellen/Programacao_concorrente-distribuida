@@ -7,13 +7,11 @@ def iniciar_cliente():
     cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     cliente.connect((host, porta))
 
-    print(cliente.recv(1024).decode())
-
     while True:
-        dados = cliente.recv(1024).decode()
-        print(dados)
+        prompt = cliente.recv(1024).decode()
+        print(prompt)
 
-        entrada = input()
+        entrada = input("> ")
         cliente.sendall(entrada.encode())
 
         if entrada.lower() == 'sair':
