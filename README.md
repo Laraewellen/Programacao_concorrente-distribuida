@@ -1,6 +1,6 @@
 # Programação Concorrente e Distribuída - 2025.1
 
-Repositório com os trabalhos e atividades da disciplina **Programação Concorrente e Distribuída**, do curso de Ciência da Computação na Universidade Católica de Brasília (UCB), ministrada pelo professor **Marcelo Eustáquio**.
+Repositório com os trabalhos e atividades da disciplina **Programação Concorrente e Distribuída**, do curso de Ciência da Computação na Universidade Católica de Brasília (UCB).
 
 ## 📚 Ementa da Disciplina
 
